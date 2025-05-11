@@ -14,7 +14,14 @@
 ChatDialog::ChatDialog(QWidget *parent) : QDialog(parent) {
     setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
     setAttribute(Qt::WA_TranslucentBackground, true);
-    setFixedSize(300, 200);
+    const int petSize = 128; // 与PetWidget保持一致
+    setFixedSize(petSize, petSize);
+    petGifLabel->setFixedSize(petSize, petSize);
+
+    // 透明背景
+    QGraphicsOpacityEffect *opacity = new QGraphicsOpacityEffect(this);
+    opacity->setOpacity(0.85);
+    setGraphicsEffect(opacity);
 
     chatHistory = new QTextEdit(this);
     chatHistory->setReadOnly(true);
@@ -25,27 +32,30 @@ ChatDialog::ChatDialog(QWidget *parent) : QDialog(parent) {
     inputLayout->addWidget(input);
     inputLayout->addWidget(sendButton);
 
-    // 聊天动图
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->addWidget(chatHistory);
+    mainLayout->addLayout(inputLayout);
+
+    setLayout(mainLayout);
+
+    connect(sendButton, &QPushButton::clicked, this, &ChatDialog::onSend);
+
+     networkManager = new QNetworkAccessManager(this);
+
     petGifLabel = new QLabel(this);
-    petGifMovie = new QMovie("C:\\Users\\23788\\Desktop\\++大作业\\素材\\读信抠图.gif");
+    petGifMovie = new QMovie("C:\\Users\\23788\\Desktop\\++大作业\\素材\\读信抠图.gif"); // 你的动图路径
     petGifLabel->setMovie(petGifMovie);
     petGifMovie->start();
-    petGifLabel->setScaledContents(false); // 不拉伸
-    QSize chatGifSize(80, 80); // 你可以根据需要调整
-    petGifLabel->setFixedSize(chatGifSize);
+    petGifLabel->setFixedSize(64, 64); // 根据你的动图大小调整
 
     QHBoxLayout *topLayout = new QHBoxLayout;
     topLayout->addWidget(petGifLabel);
     topLayout->addWidget(chatHistory);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->addLayout(topLayout);
-    mainLayout->addLayout(inputLayout);
-    setLayout(mainLayout);
-
-    connect(sendButton, &QPushButton::clicked, this, &ChatDialog::onSend);
-
-    networkManager = new QNetworkAccessManager(this);
+    QVBoxLayout *mainLayout2 = new QVBoxLayout(this);
+    mainLayout2->addLayout(topLayout);
+    mainLayout2->addLayout(inputLayout);
+    setLayout(mainLayout2);
 }
 
 void ChatDialog::onSend() {
@@ -111,10 +121,4 @@ void ChatDialog::handleDeepseekReply(QNetworkReply *reply) {
     reply->deleteLater();
 }
 
-
-void ChatDialog::setChatGifSize(int w, int h) {
-    if (petGifLabel) {
-        petGifLabel->setFixedSize(w, h);
-    }
-}
 

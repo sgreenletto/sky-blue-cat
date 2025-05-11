@@ -13,11 +13,11 @@
 #include <QMovie>
 
 
+
 class ChatDialog : public QDialog {
     Q_OBJECT
 public:
     ChatDialog(QWidget *parent = nullptr);
-    void setChatGifSize(int w, int h);
 
 private slots:
     void onSend();

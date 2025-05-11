@@ -3,18 +3,12 @@
 
 #pragma once
 #include <QWidget>
-#include "chatdialog.h"
 #include <QLabel>
 #include <QMovie>
 #include <QMenu>
 #include <QPoint>
+#include "chatdialog.h"
 
-#include "ui_petwidget.h"
-#include <QMouseEvent>
-#include <QContextMenuEvent>
-#include <QTimer>
-#include <QGraphicsOpacityEffect> // 新增
-#include <QInputDialog>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -37,22 +31,22 @@ private slots:
     void playEat();
     void playSleep();
     void openChat();
+    void exitApp();
 
 private:
+    int eatCount=0;
+    int sleepCount=0;
     Ui::PetWidget *ui;
     void playAnimation(const QString &gifPath, bool restoreIdle = true);
-
+// PetWidget.h
+    ChatDialog *chatDialog = nullptr;
+    
     QLabel *label;
     QMovie *movie;
-
-
     QPoint dragPosition;
     QString idleGif;
     QString eatGif;
     QString sleepGif;
-
-    int loopCount = 0;
-    ChatDialog *chatDialog = nullptr;
 };
 #endif
 

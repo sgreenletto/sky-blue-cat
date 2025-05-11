@@ -4,8 +4,8 @@
 #include <QMouseEvent>
 #include <QContextMenuEvent>
 #include <QTimer>
-#include <QGraphicsOpacityEffect>
-#include <QInputDialog>
+#include <QApplication>
+
 
 PetWidget::PetWidget(QWidget *parent)
     : QWidget(parent)
@@ -22,16 +22,14 @@ PetWidget::PetWidget(QWidget *parent)
     label = new QLabel(this);
     movie = new QMovie(idleGif);
     label->setMovie(movie);
+    label->setScaledContents(true);
+
     movie->start();
     resize(movie->currentPixmap().size());
 
-    label = new QLabel(this);
-    label->setScaledContents(false); // 不拉伸
-    movie = new QMovie(idleGif);
-    label->setMovie(movie);
-    movie->start();
-    label->setFixedSize(movie->currentPixmap().size());
-    resize(label->size());
+    const int petSize = 128; // 你可以根据需要调整
+    setFixedSize(petSize, petSize);
+    label->setFixedSize(petSize, petSize);
 }
 
 PetWidget::~PetWidget()
@@ -58,95 +56,65 @@ void PetWidget::contextMenuEvent(QContextMenuEvent *event) {
     QAction *eatAction = menu.addAction("Eat");
     QAction *sleepAction = menu.addAction("Sleep");
     QAction *chatAction = menu.addAction("Chat");
-    QAction *exitAction = menu.addAction("Exit");
+    menu.addSeparator();
+    menu.addAction("exit", this, &QWidget::close); // 新增
 
     connect(eatAction, &QAction::triggered, this, &PetWidget::playEat);
     connect(sleepAction, &QAction::triggered, this, &PetWidget::playSleep);
     connect(chatAction, &QAction::triggered, this, &PetWidget::openChat);
-    connect(exitAction, &QAction::triggered, qApp, &QApplication::quit);
-
+    
     menu.exec(event->globalPos());
-
-    QAction *resizeAction = menu.addAction("Resize");
-    connect(resizeAction, &QAction::triggered, this, [this]() {
-        QStringList sizes = {"Small", "Medium", "Large"};
-        bool ok;
-        QString size = QInputDialog::getItem(this, "Resize", "Select size:", sizes, 1, false, &ok);
-        if (ok) {
-            int w = 200, h = 200;
-            if (size == "Small") w = h = 120;
-            else if (size == "Large") w = h = 320;
-            label->setFixedSize(w, h);
-            resize(w, h);
-            if (chatDialog) chatDialog->setChatGifSize(w/2, h/2);
-        }
-    });
 }
 
-void PetWidget::playEat() {
-    if (chatDialog) {
-        chatDialog->close();
-        chatDialog = nullptr;
-    }
-    label->show(); // 确保主界面动图显示
-    playAnimation(eatGif);
+void PetWidget::exitApp() {
+    qApp->quit();
 }
 
-void PetWidget::playSleep() {
-    if (chatDialog) {
-        chatDialog->close();
-        chatDialog = nullptr;
-    }
-    label->show();
-    playAnimation(sleepGif);
-}
 
-void PetWidget::openChat() {
-    if (chatDialog) {
-        chatDialog->raise();
-        return;
-    }
-    label->hide(); // 隐藏主界面动图
-    chatDialog = new ChatDialog(this);
-    chatDialog->setAttribute(Qt::WA_DeleteOnClose);
-    QPoint pos = this->pos() + QPoint(this->width(), 0);
-    chatDialog->move(pos);
-    chatDialog->show();
-
-    connect(chatDialog, &QDialog::finished, this, [this]() {
-        label->show(); // 聊天框关闭时恢复主界面动图
-        chatDialog = nullptr;
-    });
-}
 void PetWidget::playAnimation(const QString &gifPath, bool restoreIdle) {
     movie->stop();
     delete movie;
     movie = new QMovie(gifPath);
-
-    // eat/sleep 动图为主界面 3/4 大小
-    QSize idleSize = label->size();
-    QSize animSize(idleSize.width() * 3 / 4, idleSize.height() * 3 / 4);
-    movie->setScaledSize(animSize);
-
     label->setMovie(movie);
-    label->setFixedSize(animSize);
+    movie->start();
 
+    // 动画播放一次后恢复idle
     if (restoreIdle) {
-        loopCount = 0;
-        disconnect(movie, nullptr, nullptr, nullptr);
-        connect(movie, &QMovie::frameChanged, this, [this, idleSize](int frameNumber) {
-            if (frameNumber == movie->frameCount() - 1) {
-                loopCount++;
-                if (loopCount >= 5) {
-                    movie->stop();
-                    delete movie;
-                    movie = new QMovie(idleGif);
-                    label->setMovie(movie);
-                    label->setFixedSize(idleSize);
-                    movie->start();
-                }
-            }
+        connect(movie, &QMovie::finished, [this]() {
+            movie->stop();
+            delete movie;
+            movie = new QMovie(idleGif);
+            label->setMovie(movie);
+            movie->start();
         });
     }
-    movie->start();
+}
+
+
+// PetWidget.cpp
+void PetWidget::openChat() {
+    if (!chatDialog) chatDialog = new ChatDialog(this);
+    chatDialog->show();
+}
+
+void PetWidget::playEat() {
+    if (chatDialog) chatDialog->close();
+    // ...播放eat动画...
+    eatCount++;
+    playAnimation(eatGif, false);
+    if (eatCount >= 5) {
+        eatCount = 0;
+        playAnimation(idleGif, false);
+    }
+}
+
+void PetWidget::playSleep() {
+    if (chatDialog) chatDialog->close();
+    // ...播放sleep动画...
+    sleepCount++;
+    playAnimation(sleepGif, false);
+    if (sleepCount >= 5) {
+        sleepCount = 0;
+        playAnimation(idleGif, false);
+    }
 }
