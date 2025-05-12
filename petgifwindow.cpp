@@ -73,12 +73,25 @@ void PetGifWindow::contextMenuEvent(QContextMenuEvent *event) {
 }
 
 void PetGifWindow::showIdle() {
+    // 如果有子窗口（如ChatDialog），关闭它
+    for (QObject *child : this->children()) {
+        ChatDialog *chat = qobject_cast<ChatDialog*>(child);
+        if (chat) chat->close();
+    }
     setGif(Idle);
 }
 void PetGifWindow::showSleep() {
+    for (QObject *child : this->children()) {
+        ChatDialog *chat = qobject_cast<ChatDialog*>(child);
+        if (chat) chat->close();
+    }
     setGif(Sleep);
 }
 void PetGifWindow::showEat() {
+    for (QObject *child : this->children()) {
+        ChatDialog *chat = qobject_cast<ChatDialog*>(child);
+        if (chat) chat->close();
+    }
     setGif(Eat);
 }
 void PetGifWindow::showChat() {
