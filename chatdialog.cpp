@@ -123,10 +123,10 @@ void ChatDialog::addBubble(const QString &text, bool isUser)
         "QLabel {"
         "border-image: url(:/gifs/longblue.png) 10 50 10 50 stretch stretch;" // 上右下左的边框宽度可根据图片边缘调整
         "color: #1E90FF;"
-        "padding: 15px 30px 15px 30px;" // 适当调整
+        "padding: 10px 18px 10px 18px;" // 适当调整
         "font-size: 15px;"
-        "max-width: 420px;"
-        "min-height: 60px;"
+        "max-width: 400px;"
+        "min-height: 40px;"
         "}"
     );
 

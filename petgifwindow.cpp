@@ -4,6 +4,9 @@
 #include <QMouseEvent>
 #include <QApplication>
 #include "chatdialog.h"
+#include <QApplication>
+#include <QWidgetList>
+
 
 static QString gifPathForState(PetState state) {
     switch (state) {
@@ -29,7 +32,7 @@ PetGifWindow::PetGifWindow(PetState state, QWidget *parent)
         const int petSize = 128;
         setFixedSize(petSize, petSize);
         label->setFixedSize(petSize, petSize);
-        move(200, 200); // 显示在屏幕中央偏左上
+        move(300, 300); // 显示在屏幕中央偏左上
     }
 }
 
@@ -43,6 +46,19 @@ void PetGifWindow::setGif(PetState state) {
     label->setScaledContents(true);
     movie->start();
     currentState = state;
+
+    if (state == Idle) {
+        label->setFixedSize(128, 128);
+        setFixedSize(128, 128);
+    } else if (state == Sleep) {
+        label->setFixedSize(140, 100); // 例如睡觉时更扁
+        setFixedSize(140, 100);
+    } else if (state == Eat) {
+        label->setFixedSize(100, 100); // 例如吃饭时更小
+        setFixedSize(100, 100);
+    } else if (state == Chat) {
+        // Chat 状态由 ChatDialog 控制
+    }
 
     qDebug() << "gif valid:" << movie->isValid();
 }
