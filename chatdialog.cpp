@@ -1,8 +1,6 @@
 #include "chatdialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QGraphicsOpacityEffect>
-
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -11,18 +9,9 @@
 #include <QUrl>
 #include <QDebug>
 
-ChatDialog::ChatDialog(QWidget *parent) : QDialog(parent) {
-    setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
-    setAttribute(Qt::WA_TranslucentBackground, true);
-    const int petSize = 128; // 与PetWidget保持一致
-    setFixedSize(petSize, petSize);
-    petGifLabel->setFixedSize(petSize, petSize);
-
-    // 透明背景
-    QGraphicsOpacityEffect *opacity = new QGraphicsOpacityEffect(this);
-    opacity->setOpacity(0.85);
-    setGraphicsEffect(opacity);
-
+ChatDialog::ChatDialog(PetState state, QWidget *parent)
+    : PetGifWindow(state, parent)
+{
     chatHistory = new QTextEdit(this);
     chatHistory->setReadOnly(true);
     input = new QLineEdit(this);
@@ -33,6 +22,7 @@ ChatDialog::ChatDialog(QWidget *parent) : QDialog(parent) {
     inputLayout->addWidget(sendButton);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->addWidget(label); // 动图
     mainLayout->addWidget(chatHistory);
     mainLayout->addLayout(inputLayout);
 
@@ -40,35 +30,17 @@ ChatDialog::ChatDialog(QWidget *parent) : QDialog(parent) {
 
     connect(sendButton, &QPushButton::clicked, this, &ChatDialog::onSend);
 
-     networkManager = new QNetworkAccessManager(this);
-
-    petGifLabel = new QLabel(this);
-    petGifMovie = new QMovie("C:\\Users\\23788\\Desktop\\++大作业\\素材\\读信抠图.gif"); // 你的动图路径
-    petGifLabel->setMovie(petGifMovie);
-    petGifMovie->start();
-    petGifLabel->setFixedSize(64, 64); // 根据你的动图大小调整
-
-    QHBoxLayout *topLayout = new QHBoxLayout;
-    topLayout->addWidget(petGifLabel);
-    topLayout->addWidget(chatHistory);
-
-    QVBoxLayout *mainLayout2 = new QVBoxLayout(this);
-    mainLayout2->addLayout(topLayout);
-    mainLayout2->addLayout(inputLayout);
-    setLayout(mainLayout2);
+    networkManager = new QNetworkAccessManager(this);
 }
 
 void ChatDialog::onSend() {
     QString userText = input->text();
     if (userText.isEmpty()) return;
     chatHistory->append("You: " + userText);
-
-    // 这里接入deepseek API，获取回复
-    // QString reply = callDeepseekAPI(userText);
-    // chatHistory->append("Pet: " + reply);
     callDeepseekAPI(userText);
     input->clear();
 }
+
 
 void ChatDialog::callDeepseekAPI(const QString &userText) {
     QUrl url("https://api.deepseek.com"); // 替换为你的 DeepSeek API 地址

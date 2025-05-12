@@ -1,23 +1,17 @@
 #ifndef CHATDIALOG_H
 #define CHATDIALOG_H
 
-#endif // CHATDIALOG_H
-#pragma once
-#include <QDialog>
-#include <QLineEdit>
+#include "petgifwindow.h"
 #include <QTextEdit>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QLabel>
-#include <QMovie>
 
-
-
-class ChatDialog : public QDialog {
+class ChatDialog : public PetGifWindow {
     Q_OBJECT
 public:
-    ChatDialog(QWidget *parent = nullptr);
+    ChatDialog(PetState state, QWidget *parent = nullptr);
 
 private slots:
     void onSend();
@@ -26,11 +20,10 @@ private:
     QTextEdit *chatHistory;
     QLineEdit *input;
     QPushButton *sendButton;
-    QLabel *petGifLabel;
-    QMovie *petGifMovie;
-
     QNetworkAccessManager *networkManager;
     void callDeepseekAPI(const QString &userText);
     void handleDeepseekReply(QNetworkReply *reply);
 };
+
+#endif // CHATDIALOG_H
 

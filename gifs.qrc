@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>gifs/eat.gif</file>
+        <file>gifs/i-dle.gif</file>
+        <file>gifs/read.gif</file>
+        <file>gifs/revolve.gif</file>
+        <file>gifs/sleep.gif</file>
+    </qresource>
+</RCC>

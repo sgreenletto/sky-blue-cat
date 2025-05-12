@@ -12,10 +12,12 @@ QT += network
 SOURCES += \
     chatdialog.cpp \
     main.cpp \
+    petgifwindow.cpp \
     petwidget.cpp
 
 HEADERS += \
     chatdialog.h \
+    petgifwindow.h \
     petwidget.h
 
 FORMS += \
@@ -25,3 +27,18 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    gifs.qrc
+
+DISTFILES += \
+    gifs/eat.gif \
+    gifs/i-dle.gif \
+    gifs/read.gif \
+    gifs/revolve.gif \
+    gifs/sleep.gif \
+    素材/eat.gif \
+    素材/i-dle.gif \
+    素材/sleep.gif \
+    素材/旋转抠图.gif \
+    素材/读信抠图.gif
