@@ -73,26 +73,34 @@ void PetGifWindow::contextMenuEvent(QContextMenuEvent *event) {
 }
 
 void PetGifWindow::showIdle() {
-    // 如果有子窗口（如ChatDialog），关闭它
-    for (QObject *child : this->children()) {
-        ChatDialog *chat = qobject_cast<ChatDialog*>(child);
+    // 关闭所有顶层 ChatDialog
+    const auto topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget *w : topLevelWidgets) {
+        ChatDialog *chat = qobject_cast<ChatDialog*>(w);
         if (chat) chat->close();
     }
     setGif(Idle);
+    this->show();
 }
+
 void PetGifWindow::showSleep() {
-    for (QObject *child : this->children()) {
-        ChatDialog *chat = qobject_cast<ChatDialog*>(child);
+    const auto topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget *w : topLevelWidgets) {
+        ChatDialog *chat = qobject_cast<ChatDialog*>(w);
         if (chat) chat->close();
     }
     setGif(Sleep);
+    this->show();
 }
+
 void PetGifWindow::showEat() {
-    for (QObject *child : this->children()) {
-        ChatDialog *chat = qobject_cast<ChatDialog*>(child);
+    const auto topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget *w : topLevelWidgets) {
+        ChatDialog *chat = qobject_cast<ChatDialog*>(w);
         if (chat) chat->close();
     }
     setGif(Eat);
+    this->show();
 }
 void PetGifWindow::showChat() {
     // 隐藏当前窗口

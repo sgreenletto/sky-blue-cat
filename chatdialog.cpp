@@ -21,9 +21,8 @@ ChatDialog::ChatDialog(PetState state, QWidget *parent)
     chatList = new QListWidget(this);
     chatList->setStyleSheet(
         "QListWidget {"
-        "  background: #f8fbff;"
+        "  background: transparent;"
         "  border: none;"
-        "  border-radius: 16px;"
         "  padding: 8px;"
         "}"
         "QListWidget::item { border: none; }"
@@ -31,7 +30,7 @@ ChatDialog::ChatDialog(PetState state, QWidget *parent)
     chatList->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     chatList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     chatList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    chatList->setMaximumHeight(220); // 控制输出区高度
+    chatList->setMaximumHeight(220);
 
     // 输入框
     input = new QLineEdit(this);
@@ -58,6 +57,10 @@ ChatDialog::ChatDialog(PetState state, QWidget *parent)
         "QPushButton:hover { background-color: #63b3ed; }"
     );
 
+    // 信号连接（顺序不能错）
+    connect(sendButton, &QPushButton::clicked, this, &ChatDialog::onSend);
+    connect(input, &QLineEdit::returnPressed, this, &ChatDialog::onSend);
+
     // 聊天输入区
     QHBoxLayout *inputLayout = new QHBoxLayout;
     inputLayout->addWidget(input);
@@ -74,13 +77,10 @@ ChatDialog::ChatDialog(PetState state, QWidget *parent)
 
     // 主布局：左侧聊天区，右侧动图
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
-
-    mainLayout->addWidget(label, 0, Qt::AlignTop | Qt::AlignLeft);//左侧宠物
-    mainLayout->addLayout(chatLayout, 1);//右侧聊天区
+    mainLayout->addWidget(label, 0, Qt::AlignTop | Qt::AlignLeft);
+    mainLayout->addLayout(chatLayout, 1);
 
     setLayout(mainLayout);
-
-    connect(sendButton, &QPushButton::clicked, this, &ChatDialog::onSend);
 
     networkManager = new QNetworkAccessManager(this);
 }
@@ -117,17 +117,19 @@ void ChatDialog::addBubble(const QString &text, bool isUser)
     QLabel *bubbleLabel = new QLabel(text);
     bubbleLabel->setWordWrap(true);
     bubbleLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    // 使用 border-image 让图片自适应气泡大小
     bubbleLabel->setStyleSheet(
-        QString("QLabel {"
-                "background: white;"
-                "color: #1E90FF;"
-                "border: 2px solid #1E90FF;"
-                "border-radius: 16px;"
-                "padding: 8px 14px;"
-                "font-size: 15px;"
-                "max-width: 320px;"
-                "}")
+        "QLabel {"
+        "border-image: url(:/gifs/longblue.png) 10 50 10 50 stretch stretch;" // 上右下左的边框宽度可根据图片边缘调整
+        "color: #1E90FF;"
+        "padding: 15px 30px 15px 30px;" // 适当调整
+        "font-size: 15px;"
+        "max-width: 420px;"
+        "min-height: 60px;"
+        "}"
     );
+
     QHBoxLayout *layout = new QHBoxLayout(bubbleWidget);
     if (isUser) {
         layout->addStretch();

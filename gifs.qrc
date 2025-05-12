@@ -5,5 +5,6 @@
         <file>gifs/read.gif</file>
         <file>gifs/revolve.gif</file>
         <file>gifs/sleep.gif</file>
+        <file>gifs/longblue.png</file>
     </qresource>
 </RCC>
