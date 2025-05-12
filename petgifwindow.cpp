@@ -25,10 +25,12 @@ PetGifWindow::PetGifWindow(PetState state, QWidget *parent)
     movie = nullptr;
     setGif(state);
 
-    const int petSize = 128;
-    setFixedSize(petSize, petSize);
-    label->setFixedSize(petSize, petSize);
-    move(200, 200); // 显示在屏幕中央偏左上
+    if (state != Chat) {
+        const int petSize = 128;
+        setFixedSize(petSize, petSize);
+        label->setFixedSize(petSize, petSize);
+        move(200, 200); // 显示在屏幕中央偏左上
+    }
 }
 
 void PetGifWindow::setGif(PetState state) {
@@ -80,8 +82,12 @@ void PetGifWindow::showEat() {
     setGif(Eat);
 }
 void PetGifWindow::showChat() {
-    // 弹出聊天窗口
-    ChatDialog *w = new ChatDialog(Chat, nullptr);
+    // 隐藏当前窗口
+    this->hide();
+    // 弹出聊天窗口，parent 设为 this
+    ChatDialog *w = new ChatDialog(Chat, this);
+    // 监听 ChatDialog 关闭事件，自动恢复主窗口
+    connect(w, &ChatDialog::destroyed, this, [this]() { this->show(); });
     w->show();
 }
 void PetGifWindow::exitApp() {
