@@ -1,0 +1,29 @@
+<RCC/>
+<RCC>
+    <qresource prefix="/weedresources">
+        <file>gifs/weedresources/resources/images/icon.ico</file>
+        <file>gifs/weedresources/resources/images/uncover.png</file>
+        <file>gifs/weedresources/resources/images/cover.png</file>
+        <file>gifs/weedresources/resources/images/error.png</file>
+        <file>gifs/weedresources/resources/images/flag.png</file>
+        <file>gifs/weedresources/resources/images/mine.png</file>
+        <file>gifs/weedresources/resources/images/touch.png</file>
+        <file>gifs/weedresources/resources/images/number_1.png</file>
+        <file>gifs/weedresources/resources/images/number_2.png</file>
+        <file>gifs/weedresources/resources/images/number_3.png</file>
+        <file>gifs/weedresources/resources/images/number_4.png</file>
+        <file>gifs/weedresources/resources/images/number_5.png</file>
+        <file>gifs/weedresources/resources/images/number_6.png</file>
+        <file>gifs/weedresources/resources/images/number_7.png</file>
+        <file>gifs/weedresources/resources/images/number_8.png</file>
+        <file>gifs/weedresources/resources/images/title.png</file>
+        <file>gifs/weedresources/resources/sounds/click.wav</file>
+        <file>gifs/weedresources/resources/sounds/failure.wav</file>
+        <file>gifs/weedresources/resources/sounds/success.wav</file>
+        <file>gifs/weedresources/resources/images/colorback.png</file>
+        <file>gifs/weedresources/resources/images/certify.png</file>
+        <file>gifs/weedresources/resources/images/open.png</file>
+        <file>gifs/weedresources/resources/images/tips.png</file>
+    </qresource>
+</RCC>
+
