@@ -1,11 +1,17 @@
 #ifndef PETGIFWINDOW_H
 #define PETGIFWINDOW_H
 
+class ChatDialog;
+
 #include <QWidget>
 #include <QLabel>
 #include <QMovie>
 #include <QMenu>
 #include <QPoint>
+
+#include <QMenuBar>
+#include <QMenu>
+#include <QAction>
 
 enum PetState {
     Idle,
@@ -18,9 +24,10 @@ class PetGifWindow : public QWidget {
     Q_OBJECT
 public:
     explicit PetGifWindow(PetState state, QWidget *parent = nullptr);
+    static PetGifWindow* mainInstance;
+    void contextMenuEvent(QContextMenuEvent *event) override;
 
 protected:
-    void contextMenuEvent(QContextMenuEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
 
@@ -33,6 +40,7 @@ private slots:
 
 private:
     void setGif(PetState state);
+    ChatDialog* chatDialog = nullptr;
 
 protected:
     QLabel *label;

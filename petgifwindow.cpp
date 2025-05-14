@@ -6,7 +6,12 @@
 #include "chatdialog.h"
 #include <QApplication>
 #include <QWidgetList>
+#include <QTimer>
+#include "chatdialog.h"
+#include "weeedheaders/headers/views/dialogs/startdialog.h"
+#include "weeedheaders/headers/views/mainwindow.h"
 
+PetGifWindow* PetGifWindow::mainInstance = nullptr;
 
 static QString gifPathForState(PetState state) {
     switch (state) {
@@ -21,8 +26,10 @@ static QString gifPathForState(PetState state) {
 PetGifWindow::PetGifWindow(PetState state, QWidget *parent)
     : QWidget(parent), currentState(state)
 {
+    if (!mainInstance && state == Idle) mainInstance = this;
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
     setAttribute(Qt::WA_TranslucentBackground, true);
+    setAutoFillBackground(false);
 
     label = new QLabel(this);
     movie = nullptr;
@@ -34,8 +41,8 @@ PetGifWindow::PetGifWindow(PetState state, QWidget *parent)
         label->setFixedSize(petSize, petSize);
         move(300, 300); // 显示在屏幕中央偏左上
     }
-}
 
+} 
 void PetGifWindow::setGif(PetState state) {
     if (movie) {
         movie->stop();
@@ -45,7 +52,6 @@ void PetGifWindow::setGif(PetState state) {
     label->setMovie(movie);
     label->setScaledContents(true);
     movie->start();
-    currentState = state;
 
     if (state == Idle) {
         label->setFixedSize(128, 128);
@@ -63,69 +69,132 @@ void PetGifWindow::setGif(PetState state) {
     qDebug() << "gif valid:" << movie->isValid();
 }
 
+// ... 省略前面代码 ...
+
 void PetGifWindow::contextMenuEvent(QContextMenuEvent *event) {
     QMenu menu(this);
 
-    // back 按钮（初始界面没有，其他界面有）
     if (currentState != Idle) {
         menu.addAction("Back", this, &PetGifWindow::showIdle);
     }
-    // sleep 按钮（sleep界面没有）
     if (currentState != Sleep) {
         menu.addAction("Sleep", this, &PetGifWindow::showSleep);
     }
-    // eat 按钮（eat界面没有）
     if (currentState != Eat) {
         menu.addAction("Eat", this, &PetGifWindow::showEat);
     }
-    // chat 按钮（chat界面没有）
     if (currentState != Chat) {
         menu.addAction("Chat", this, &PetGifWindow::showChat);
     }
+
+    menu.addAction("Weed", this, [this]() {
+        StartDialog *startDialog = new StartDialog(nullptr);
+        startDialog->setModal(true);
+        int result = startDialog->exec();
+        qDebug() << "StartDialog exec result:" << result;
+        if (result == QDialog::Accepted) {
+            qDebug() << "StartDialog accepted from context menu";
+            MainWindow *weedWindow = new MainWindow();
+            weedWindow->initialize();
+            weedWindow->show();
+            qDebug() << "MainWindow shown from context menu";
+        }
+        startDialog->deleteLater();
+    });
+
     menu.addSeparator();
     menu.addAction("Exit", this, &PetGifWindow::exitApp);
 
     menu.exec(event->globalPos());
 }
 
+// 下面是 showIdle、showSleep 等其他成员函数
+
 void PetGifWindow::showIdle() {
-    // 关闭所有顶层 ChatDialog
+    if (this != mainInstance && mainInstance) { mainInstance->showIdle(); return; }
+    // 关闭并销毁当前chatDialog
+    if (chatDialog) {
+        chatDialog->close();
+        chatDialog->deleteLater();
+        chatDialog = nullptr;
+    }
+    // 关闭所有顶层 ChatDialog（保险）
     const auto topLevelWidgets = QApplication::topLevelWidgets();
     for (QWidget *w : topLevelWidgets) {
         ChatDialog *chat = qobject_cast<ChatDialog*>(w);
         if (chat) chat->close();
     }
+    currentState = Idle;
     setGif(Idle);
     this->show();
+    this->raise();
+    this->activateWindow();
+    this->update();
 }
 
 void PetGifWindow::showSleep() {
+    if (this != mainInstance && mainInstance) { mainInstance->showSleep(); return; }
+    if (chatDialog) {
+        chatDialog->close();
+        chatDialog->deleteLater();
+        chatDialog = nullptr;
+    }
     const auto topLevelWidgets = QApplication::topLevelWidgets();
     for (QWidget *w : topLevelWidgets) {
         ChatDialog *chat = qobject_cast<ChatDialog*>(w);
         if (chat) chat->close();
     }
+    currentState = Sleep;
     setGif(Sleep);
     this->show();
+    this->raise();
+    this->activateWindow();
+    this->update();
 }
 
 void PetGifWindow::showEat() {
+    if (this != mainInstance && mainInstance) { mainInstance->showEat(); return; }
+    if (chatDialog) {
+        chatDialog->close();
+        chatDialog->deleteLater();
+        chatDialog = nullptr;
+    }
     const auto topLevelWidgets = QApplication::topLevelWidgets();
     for (QWidget *w : topLevelWidgets) {
         ChatDialog *chat = qobject_cast<ChatDialog*>(w);
         if (chat) chat->close();
     }
+    currentState = Eat;
     setGif(Eat);
     this->show();
+    this->raise();
+    this->activateWindow();
+    this->update();
 }
 void PetGifWindow::showChat() {
+    if (this != mainInstance && mainInstance) { mainInstance->showChat(); return; }
+    // 如果已有chatDialog且未关闭，先销毁
+    if (chatDialog) {
+        chatDialog->close();
+        chatDialog->deleteLater();
+        chatDialog = nullptr;
+    }
     // 隐藏当前窗口
     this->hide();
-    // 弹出聊天窗口，parent 设为 this
-    ChatDialog *w = new ChatDialog(Chat, this);
-    // 监听 ChatDialog 关闭事件，自动恢复主窗口
-    connect(w, &ChatDialog::destroyed, this, [this]() { this->show(); });
-    w->show();
+    // 新建聊天窗口
+    chatDialog = new ChatDialog(Chat, nullptr);
+    // 监听 ChatDialog 关闭事件，延迟主窗口 show 并置空指针
+    connect(chatDialog, &ChatDialog::destroyed, this, [this]() {
+        QTimer::singleShot(0, this, [this]() {
+            this->show();
+            this->raise();
+            this->activateWindow();
+            this->update();
+            chatDialog = nullptr;
+        });
+    });
+    currentState = Chat;
+    chatDialog->show();
 }
 void PetGifWindow::exitApp() {
     qApp->quit();

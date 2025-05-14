@@ -9,11 +9,13 @@
 #include <QNetworkReply>
 #include <QUrl>
 #include <QDebug>
+#include <QContextMenuEvent>
 
 
 ChatDialog::ChatDialog(PetState state, QWidget *parent)
     : PetGifWindow(state, parent)
 {
+    setAttribute(Qt::WA_DeleteOnClose);
     this->setMinimumSize(600, 350);
     this->resize(600, 350);
 
@@ -120,15 +122,15 @@ void ChatDialog::addBubble(const QString &text, bool isUser)
 
     // 使用 border-image 让图片自适应气泡大小
     bubbleLabel->setStyleSheet(
-        "QLabel {"
-        "border-image: url(:/gifs/longblue.png) 10 50 10 50 stretch stretch;" // 上右下左的边框宽度可根据图片边缘调整
-        "color: #1E90FF;"
-        "padding: 10px 18px 10px 18px;" // 适当调整
-        "font-size: 15px;"
-        "max-width: 400px;"
-        "min-height: 40px;"
-        "}"
-    );
+    "QLabel {"
+    "border-image: url(:/gifs/longblue.png) 10 50 10 50 stretch stretch;"
+    "color: #1E90FF;"
+    "padding: 10px 18px 10px 18px;"
+    "font-size: 15px;"
+    "max-width: 450px;" // 修改为更大宽度
+    "min-height: 40px;"
+    "max-height: 2000px;"
+);
 
     QHBoxLayout *layout = new QHBoxLayout(bubbleWidget);
     if (isUser) {
@@ -158,6 +160,7 @@ void ChatDialog::onSend() {
 void ChatDialog::handleDeepseekReply(QNetworkReply *reply) {
     QString replyText;
     if (reply->error() != QNetworkReply::NoError) {
+        qDebug() << "Network error:" << reply->errorString();
         replyText = "网络错误！";
     } else {
         QByteArray response = reply->readAll();
@@ -182,7 +185,7 @@ void ChatDialog::handleDeepseekReply(QNetworkReply *reply) {
 }
 
 void ChatDialog::callDeepseekAPI(const QString &userText) {
-    QUrl url("https://api.deepseek.com"); // 替换为你的 DeepSeek API 地址
+    QUrl url("https://api.deepseek.com/chat/completions"); // 替换为你的 DeepSeek API 地址
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", "Bearer sk-a0a2447838cf49a8bc68f1ded9114a24"); // 替换为你的 API KEY
@@ -196,9 +199,17 @@ void ChatDialog::callDeepseekAPI(const QString &userText) {
     messages.append(message);
 
     QJsonObject body;
-    body["model"] = "小八"; // 替换为你的模型名
+    body["model"] = "deepseek-chat"; // 替换为你的模型名
     body["messages"] = messages;
 
     QNetworkReply *reply = networkManager->post(request, QJsonDocument(body).toJson());
     connect(reply, &QNetworkReply::finished, [this, reply]() { handleDeepseekReply(reply); });
+}
+
+void ChatDialog::contextMenuEvent(QContextMenuEvent *event) {
+    if (PetGifWindow::mainInstance && PetGifWindow::mainInstance != this) {
+        PetGifWindow::mainInstance->contextMenuEvent(event);
+    } else {
+        PetGifWindow::contextMenuEvent(event);
+    }
 }

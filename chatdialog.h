@@ -19,6 +19,8 @@ class ChatDialog : public PetGifWindow {
     Q_OBJECT
 public:
     ChatDialog(PetState state, QWidget *parent = nullptr);
+protected:
+    void contextMenuEvent(QContextMenuEvent *event) override;
 
 private slots:
     void onSend();
